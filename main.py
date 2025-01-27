@@ -151,5 +151,5 @@ s3_bucket = "Test"
 file_basename = "assets/video_12345abc"
 review_id = 0
 
-response = send_to_sqs(creative_id, data, s3_bucket, file_basename, review_id)
-print(response)
+response_data = send_to_sqs(creative_id, data, s3_bucket, file_basename, review_id)
+print(response_data)
