@@ -1,0 +1,26 @@
+version: 0.0
+os: linux
+files:
+  - source: /app.zip
+    destination: /home/ubuntu/
+
+hooks:
+  BeforeInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 300
+      runas: root
+
+  AfterInstall:
+    - location: scripts/unzip_and_setup.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStart:
+    - location: scripts/start_app.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStop:
+    - location: scripts/stop_app.sh
+      timeout: 300
+      runas: ubuntu
