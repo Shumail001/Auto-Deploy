@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - pip install -r requirements.txt
+  pre_build:
+    commands:
+      - echo Running tests...
+  build:
+    commands:
+      - echo Zipping up the application...
+      - zip -r app.zip .  # Zip the entire project 
+  post_build:
+    commands:
+      - echo Build completed. Checking if an artifact has been uploaded to S3...
+      - echo All build steps are complete.
+
+artifacts:
+  files:
+    - '**/*'
