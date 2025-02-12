@@ -4,11 +4,14 @@ import uuid
 from dotenv import load_dotenv
 import boto3
 from fastapi import FastAPI, HTTPException
+
+# Load environment variables
 load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI()
 
+# Initialize SQS client
 sqs_client = boto3.client("sqs",
                           region_name=os.getenv("AWS_DEFAULT_REGION"),
                           aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
@@ -16,12 +19,8 @@ sqs_client = boto3.client("sqs",
                           )
 sqs_queue_url = os.getenv("SQS_QUEUE_URL")
 
-@app.get("/")
-def home():
-    return {"message": "Welcome to the FastAPI SQS Service!"}
-
+# Function to send message to SQS
 def send_to_sqs(creative_id: str, data: dict, s3_bucket: str, file_basename: str, review_id: int):
-
     try:
         message_id = str(uuid.uuid4())
         sqs_client.send_message(
@@ -46,117 +45,13 @@ def send_to_sqs(creative_id: str, data: dict, s3_bucket: str, file_basename: str
     except Exception as sqs_error:
         raise HTTPException(status_code=500, detail=f"Error sending message to SQS: {str(sqs_error)}")
 
+# Home route
+@app.get("/")
+def home():
+    return {"message": "Welcome to the FastAPI SQS Service!"}
 
-
-creative_id = "02b1c130-ef66-4b24-a9f0-da1156e5d82a1"
-data = {
-        "projectSettings": {
-            "resolution": "1920x1080",
-            "frameRate": "30fps",
-            "filename": "temp",
-            "aspectRatio": "16:9",
-            "codec": "H.264",
-            "exportSettings": {
-                "bitrate": "4000k",
-                "fileFormat": "mp4"
-            }
-        },
-        "tracks": {
-            "videoTracks": [
-                {
-                    "trackId": "video1",
-                    "clips": [
-                        {
-                            "clipId": "clip1",
-                            "source": "s3://fibonacci-json-2-video/test-videos/test1.mp4",
-                            "storageType": "S3",
-                            "startInSource": "00:00:00",
-                            "duration": "03s",
-                            "startInTimeline": "00:00:10",
-                            "transformations": {
-                                "scale": {"width": 1280, "height": 720},
-                                "position": {"x": 0, "y": 50}
-                            },
-                            "audio": {
-                                "volume": 0.9,
-                                "fadeIn": "2s",
-                                "fadeOut": "2s"
-                            },
-                            "transitions": {
-                                "in": {"type": "fade", "duration": "1s"},
-                                "out": {"type": "crossfade", "duration": "1s"}
-                            }
-                        }
-                    ]
-                },
-                {
-                    "trackId": "video2",
-                    "clips": [
-                        {
-                            "clipId": "clip2",
-                            "source": "s3://fibonacci-json-2-video/test-videos/test2.mp4",
-                            "storageType": "S3",
-                            "startInSource": "00:00:00",
-                            "duration": "07s",
-                            "startInTimeline": "00:00:00",
-                            "transformations": {
-                                "scale": {"width": 1280, "height": 720},
-                                "position": {"x": 0, "y": 0}
-                            },
-                            "audio": {
-                                "volume": 0.9,
-                                "fadeIn": "2s",
-                                "fadeOut": "2s"
-                            },
-                            "transitions": {
-                                "in": {"type": "fade", "duration": "1s"},
-                                "out": {"type": "crossfade", "duration": "1s"}
-                            }
-                        }
-                    ]
-                }
-            ],
-            "audioTracks": [
-                {
-                    "trackId": "audio1",
-                    "source": "s3://fibonacci-json-2-video/test-videos/relaxing-audio-for-yoga-131673.mp3",
-                    "storageType": "S3",
-                    "startInTimeline": "00:00:00",
-                    "duration": "09s",
-                    "effects": {
-                        "noiseReduction": "medium",
-                        "reverb": {"enabled": True, "roomSize": "medium"}
-                    }
-                }
-            ]
-        },
-        "text": {
-            "overlays": [
-                {
-                    "text": "Yasir Maqbool",
-                    "font": "Arial",
-                    "size": 24,
-                    "color": "#FFFFFF",
-                    "position": {"x": "center", "y": "bottom"},
-                    "timing": {"start": "00:00:02", "end": "00:00:05"}
-                }
-            ]
-        },
-        "animations": {
-            "motion": [
-                {
-                    "clipId": "clip1",
-                    "zoom": {"from": 1.0, "to": 1.2, "duration": "5s"}
-                }
-            ]
-        },
-        "croppingAndResizing": {
-            "crop": {"top": 0, "bottom": 0, "left": 0, "right": 0}
-        }
-    }
-s3_bucket = "Test"
-file_basename = "assets/video_12345abc"
-review_id = 0
-
-response_data = send_to_sqs(creative_id, data, s3_bucket, file_basename, review_id)
-print(response_data)
+# API endpoint to send data to SQS
+@app.post("/send")
+def send_message(creative_id: str, data: dict, s3_bucket: str, file_basename: str, review_id: int):
+    response = send_to_sqs(creative_id, data, s3_bucket, file_basename, review_id)
+    return response
