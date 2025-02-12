@@ -3,8 +3,11 @@ import os
 import uuid
 from dotenv import load_dotenv
 import boto3
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 load_dotenv()
+
+# Initialize FastAPI app
+app = FastAPI()
 
 sqs_client = boto3.client("sqs",
                           region_name=os.getenv("AWS_DEFAULT_REGION"),
@@ -12,6 +15,10 @@ sqs_client = boto3.client("sqs",
                           aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
                           )
 sqs_queue_url = os.getenv("SQS_QUEUE_URL")
+
+@app.get("/")
+def home():
+    return {"message": "Welcome to the FastAPI SQS Service!"}
 
 def send_to_sqs(creative_id: str, data: dict, s3_bucket: str, file_basename: str, review_id: int):
 
