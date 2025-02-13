@@ -33,7 +33,6 @@ jobs:
           pip install -r requirements.txt
 
 
-      - name: Start FastAPI application
+      - name: Restart FastAPI Service
         run: |
-          cd fastapi-app
-          nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > uvicorn.log 2>&1 &
+          sudo systemctl restart fastapi
