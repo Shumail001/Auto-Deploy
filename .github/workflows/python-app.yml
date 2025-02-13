@@ -1,27 +1,37 @@
-name: Deploy FastAPI to EC2
+name: Deploy FastAPI App
 
 on:
   push:
-    branches:
-      - main  # Trigger deployment when changes are pushed to the main branch
+    branches: [ main ]
 
 jobs:
   deploy:
-    runs-on: self-hosted  # Use your self-hosted EC2 runner
+    name: EC2 Deployment
+    runs-on: self-hosted  # Runs directly on EC2 instead of GitHub's hosted runner
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-      - name: Install dependencies
+      - name: Set Up Python
         run: |
-          cd /home/ubuntu/FastApi/CICD/Auto-Deploy
-          pip install --upgrade pip
+          sudo apt update -y
+          sudo apt install -y python3 python3-pip python3-venv
+
+      - name: Deploy FastAPI App
+        run: |
+          cd /home/ubuntu/ &&
+          rm -rf fastapi-app
+          git clone https://github.com/Shumail001/Auto-Deploy.git fastapi-app
+          cd fastapi-app
+
+          # Set up Python virtual environment
+          python3 -m venv venv
+          source venv/bin/activate
+
+          # Install dependencies
           pip install -r requirements.txt
 
-      - name: Kill existing Uvicorn process
-        run: |
-          pkill -f "uvicorn main:app" || echo "No process found"
 
       - name: Start FastAPI application
         run: |
